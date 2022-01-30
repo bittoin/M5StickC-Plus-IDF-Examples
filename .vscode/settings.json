@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "sdkconfig.h": "c",
+        "task.h": "c",
+        "freertos.h": "c",
+        "portmacro.h": "c",
+        "core.h": "c",
+        "gpio.h": "c"
+    }
+}
