@@ -51,6 +51,7 @@ void readBlinkPeriod(void *parameter){
     char data[128];
     int length = 0;
     char temp[128] = "";
+    char number[9] = "";
     
     while(1){
         
@@ -58,53 +59,23 @@ void readBlinkPeriod(void *parameter){
         length = uart_read_bytes(UART_NUM_0, data, length, 100);
         if (length > 0){
             for (int i = 0; i < length; ++i){
-                char cToStr[2];
-                cToStr[0] = data[i];
-                cToStr[1] = '\0';
-
                 if (data[i] == '\r'){ // Quando pega o ENTER do teclado
-                    printf("Data: %s\n", temp);
+                    int newPeriod = atoi(number);
+                    if (newPeriod != 0){
+                        blinkPeriod = newPeriod;
+                        memset(number, 0, sizeof(number));
+                    }
+                    printf("%s\n", temp);
                     memset(temp, 0, sizeof(temp));
                 }
-                strcat(temp, cToStr);
-            }
-            printf("\nSize: %d\n", length);
-            uart_flush(UART_NUM_0);
-        }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
-        //printf("Enter period for led : ");
-        //scanf("%255s", chr);
-        // gets(input);
-        // printf("%s\n", input);
-        // for(int i = 0; i <= strlen(chr); i++){
-        //     printf("%c", chr[i]);
-        //     if (chr[i]=='\0'){
-        //         printf("\nFoi o barra 0\n");
-        //     }
-        //     if (chr[i]=='\n'){
-        //         printf("\nFoi o barra N\n");
-        //     }
-        //     if (chr[i]=='\r'){
-        //         printf("\nFoi o barra R\n");
-        //     }
-        // }
-        //printf("%s\n", chr);
-        // int x;
-        // tmp = strtok(chr, " ");
+                strncat(temp, &data[i], 1); // https://www.geeksforgeeks.org/how-to-append-a-character-to-a-string-in-c/
 
-        // if (!strcmp(tmp,"delay")){
-        //     printf("\nFoi delay carai %s\n", chr);
-        //     tmp = strtok(NULL," ");
-            
-        //     int period = atoi(tmp);
-        //     blinkPeriod = period;
-        // }else{
-        //     chr[0] = tmp;
-        //     //msg += " ";
-        //     //tmp = strtok(NULL," ");
-        //     //msg += tmp;
-        //     printf("Data: %s", tmp);
-        // }
+                if (strstr(temp, "delay ") != NULL){ // https://www.delftstack.com/howto/c/string-contains-in-c/
+                    strncat(number, &data[i], 1);  
+                } 
+            }
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
 
