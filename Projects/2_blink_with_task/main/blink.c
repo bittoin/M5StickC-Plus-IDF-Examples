@@ -16,18 +16,19 @@
    or you can edit the following line and set a number here.
 */
 #define BLINK_GPIO 10
-#define app_cpu 1
+#define DELAY_MS 500
+#define APP_CPU 1
 
 void toggleLed(void *parameter){
-    while(1) {
+    while(true) {
         /* Blink off (output low) */
         printf("Turning off the LED\n");
         gpio_set_level(BLINK_GPIO, 0);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(DELAY_MS / portTICK_PERIOD_MS);
         /* Blink on (output high) */
         printf("Turning on the LED\n");
         gpio_set_level(BLINK_GPIO, 1);
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(DELAY_MS / portTICK_PERIOD_MS);
     }
 }
 
@@ -38,12 +39,12 @@ void app_main(void)
     gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
 
     xTaskCreatePinnedToCore(
-        toggleLed,
-        "Toggle LED",
-        1024,
-        NULL,
-        1,
-        NULL,
-        app_cpu
+        toggleLed,      // Function that will be called when task starts
+        "Toggle LED",   // Name of the task. Facilitate debugging.
+        1024,           // Stack size in bytes
+        NULL,           // Pointer to parameter
+        1,              // Task priority
+        NULL,           // Pointer to task handler, if it exists
+        APP_CPU         // CoreID of the board (0 or 1)
     );
 }

@@ -29,7 +29,7 @@ void app_main(void)
     gpio_reset_pin(BLINK_GPIO);
     /* Set the GPIO as a push/pull output */
     gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-    while(1) {
+    while(true) {
         /* Blink off (output low) */
         printf("Turning off the LED\n");
         gpio_set_level(BLINK_GPIO, 0);
