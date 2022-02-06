@@ -1,6 +1,6 @@
 # Exemplos de códigos com ESP-IDF p/ M5StickC Plus 
 
-Acesse o link de cada projeto para ter acesso a mais informações sobre eles.
+Acesse o link de cada projeto para ter acesso a mais informações sobre eles. Todos os projetos foram testados na versão **v4.4 do ESP-IDF**.
 
 <table>
 <thead>

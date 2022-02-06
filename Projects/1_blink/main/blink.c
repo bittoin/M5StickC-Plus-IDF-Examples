@@ -16,6 +16,7 @@
    or you can edit the following line and set a number here.
 */
 #define BLINK_GPIO 10
+#define DELAY_MS 500
 
 void app_main(void)
 {
@@ -32,10 +33,10 @@ void app_main(void)
         /* Blink off (output low) */
         printf("Turning off the LED\n");
         gpio_set_level(BLINK_GPIO, 0);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(DELAY_MS / portTICK_PERIOD_MS);
         /* Blink on (output high) */
         printf("Turning on the LED\n");
         gpio_set_level(BLINK_GPIO, 1);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(DELAY_MS / portTICK_PERIOD_MS);
     }
 }
