@@ -2,7 +2,7 @@
 
 Este exemplo foi retirado e modificado de uma aula sobre FreeRTOS realizada no canal oficial da Digi-Key no YouTube. A explicação sobre a criação de uma task, o que cada parâmetro significa e a importância de utilizá-la nos projetos pode ser encontrada tanto no vídeo quanto na documentação oficial da Espressif. Além disso, devemos observar o pino referente ao LED Onboard da M5StickC Plus. Como pode ser visto na tabela a seguir, de acordo com o mapa de pinos oficial, o LED se encontra na **GPIO10**.
 
-**Fontes:** 
+### Fontes
 
 - [Video: Getting Started with FreeRTOS](https://youtu.be/JIr7Xm_riRs)
 - [Explicação sobre criação de tasks Doc oficial Espressif](https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/api-reference/system/freertos.html?highlight=xtaskcreatepinnedtocore#_CPPv423xTaskCreatePinnedToCore14TaskFunction_tPCKcK8uint32_tPCv11UBaseType_tPC12TaskHandle_tK10BaseType_t)
