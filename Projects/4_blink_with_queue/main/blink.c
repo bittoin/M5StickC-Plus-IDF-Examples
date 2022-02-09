@@ -32,33 +32,7 @@
 static QueueHandle_t queue_1;
 static QueueHandle_t queue_2;
 static const int queue_1_len = 5;   // Size of queue_1
-static const int queue_2_len = 5;     // Size of queue_2
-
-//uint16_t blinkPeriod = 1000;
-
-void taskB(void *parameter){
-    uint16_t ledDelay = 50;
-    uint8_t counter = 0;
-    const char maxCounterMessage[INPUT_BUFFER_SIZE] = "Blinked";
-    while(1) {
-        // See if there's a message in the queue (do not block)
-        if (xQueueReceive(queue_1, (void *)&ledDelay, 0) == pdTRUE) {
-            //printf("Novo delay: %d", incomingDelay);
-            //printf("TaskB > From queue 1: %d\n", ledDelay);
-        }
-        // Blink led
-        gpio_set_level(BLINK_GPIO, 0);
-        vTaskDelay(ledDelay / portTICK_PERIOD_MS);
-        gpio_set_level(BLINK_GPIO, 1);
-        vTaskDelay(ledDelay / portTICK_PERIOD_MS);
-        counter++;
-
-        if (counter >= 100){
-            xQueueSend(queue_2, (void *)&maxCounterMessage, 10);
-            counter = 1;
-        }
-    }
-}
+static const int queue_2_len = 5;   // Size of queue_2
 
 void taskA(void *parameter){
     setvbuf(stdin, NULL, _IONBF, 0);
@@ -107,6 +81,30 @@ void taskA(void *parameter){
             }
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+}
+
+void taskB(void *parameter){
+    uint16_t ledDelay = 50;
+    uint8_t counter = 0;
+    const char maxCounterMessage[INPUT_BUFFER_SIZE] = "Blinked";
+    while(1) {
+        // See if there's a message in the queue (do not block)
+        if (xQueueReceive(queue_1, (void *)&ledDelay, 0) == pdTRUE) {
+            //printf("Novo delay: %d", incomingDelay);
+            //printf("TaskB > From queue 1: %d\n", ledDelay);
+        }
+        // Blink led
+        gpio_set_level(BLINK_GPIO, 0);
+        vTaskDelay(ledDelay / portTICK_PERIOD_MS);
+        gpio_set_level(BLINK_GPIO, 1);
+        vTaskDelay(ledDelay / portTICK_PERIOD_MS);
+        counter++;
+
+        if (counter >= 100){
+            xQueueSend(queue_2, (void *)&maxCounterMessage, 10);
+            counter = 1;
+        }
     }
 }
 
