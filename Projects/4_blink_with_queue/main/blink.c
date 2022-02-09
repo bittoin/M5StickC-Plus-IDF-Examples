@@ -35,6 +35,7 @@ static const int queue_1_len = 5;   // Size of queue_1
 static const int queue_2_len = 5;   // Size of queue_2
 
 void taskA(void *parameter){
+    // Console configuration
     setvbuf(stdin, NULL, _IONBF, 0);
     setvbuf(stdout, NULL, _IONBF, 0);
     ESP_ERROR_CHECK(uart_driver_install(CONFIG_ESP_CONSOLE_UART_NUM, 256, 0, 0, NULL, 0));
@@ -63,7 +64,6 @@ void taskA(void *parameter){
                 if (input[i] == '\r'){ // Gets insert from keyboard
                     uint16_t newPeriod = atoi(number);
                     if (newPeriod != 0){
-                        //blinkPeriod = newPeriod;
                         // Send integer to other task via queue
                         if (xQueueSend(queue_1, (void *)&newPeriod, 10) != pdTRUE) {
                             printf("TaskA > ERROR: Could not put item on delay queue.\n");
@@ -91,8 +91,7 @@ void taskB(void *parameter){
     while(1) {
         // See if there's a message in the queue (do not block)
         if (xQueueReceive(queue_1, (void *)&ledDelay, 0) == pdTRUE) {
-            //printf("Novo delay: %d", incomingDelay);
-            //printf("TaskB > From queue 1: %d\n", ledDelay);
+            // Updates ledDelay whenever new delay value comes
         }
         // Blink led
         gpio_set_level(BLINK_GPIO, 0);
