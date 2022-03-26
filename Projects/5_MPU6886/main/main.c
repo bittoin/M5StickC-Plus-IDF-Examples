@@ -1,22 +1,40 @@
 #include <stdio.h>
 #include <mpu6886.h>
-#include <freertos/FreeRTOS.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
 
-float aX, aY, aZ;
+#define BLINK_GPIO 10
+#define INPUT_BUFFER_SIZE 128
+#define APP_CPU 1
+
 i2c_port_t port = I2C_NUM_0;
 
-void app_main(void)
-{
-    aX = 0.0;
-    aY = 0.0;
-    aZ = 0.0;
+void showMpuAccValues(void *parameter){
+    float aX = 0.0;
+    float aY = 0.0;
+    float aZ = 0.0;
 
+    printf( "MPU6886 main: Init MPU6886 finished\n\n" );
     mpu6886_init(&port);
     vTaskDelay(2000 / portTICK_PERIOD_MS);
-    printf( "MPU6886 main: Init MPU6886 finished\n\n" );
+    printf( "MPU6886 main: finished MPU6886 config\n\n" );
     while(1){
         mpu6886_accel_data_get(&aX, &aY, &aZ);
         printf("MPU6886: aX: %f, aY: %f, aZ: %f\n", aX, aY, aZ);
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
     }
+}
+
+void app_main(void)
+{
+    xTaskCreatePinnedToCore(
+        showMpuAccValues,
+        "MPU Acc Data",
+        4096,
+        NULL,
+        1,
+        NULL,
+        APP_CPU
+    );
 }
