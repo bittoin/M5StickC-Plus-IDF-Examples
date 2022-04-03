@@ -8,6 +8,9 @@
         "gpio.h": "c",
         "string": "c",
         "sstream": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "mpu6886.h": "c"
     }
 }
