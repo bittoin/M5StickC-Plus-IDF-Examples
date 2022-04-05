@@ -11,6 +11,7 @@
         "string.h": "c",
         "stdio.h": "c",
         "stdlib.h": "c",
-        "mpu6886.h": "c"
+        "mpu6886.h": "c",
+        "core2foraws.h": "c"
     }
 }
