@@ -24,9 +24,14 @@
    or you can edit the following line and set a number here.
 */
 // LEFT SERIAL COMMANDS WITH JUST 1 TASK
-#define BLINK_GPIO 10
+#define M5_LED_GPIO (10)
 #define INPUT_BUFFER_SIZE 128
-#define APP_CPU 1
+
+#if CONFIG_FREERTOS_UNICORE
+    static const BaseType_t app_cpu = 0;
+#else
+    static const BaseType_t app_cpu = 1;
+#endif
 
 // Queue
 static QueueHandle_t queue_1;
@@ -94,9 +99,9 @@ void taskB(void *parameter){
             // Updates ledDelay whenever new delay value comes
         }
         // Blink led
-        gpio_set_level(BLINK_GPIO, 0);
+        gpio_set_level(M5_LED_GPIO, 0);
         vTaskDelay(ledDelay / portTICK_PERIOD_MS);
-        gpio_set_level(BLINK_GPIO, 1);
+        gpio_set_level(M5_LED_GPIO, 1);
         vTaskDelay(ledDelay / portTICK_PERIOD_MS);
         counter++;
 
@@ -109,9 +114,9 @@ void taskB(void *parameter){
 
 void app_main(void)
 {
-    gpio_reset_pin(BLINK_GPIO);
+    gpio_reset_pin(M5_LED_GPIO);
     /* Set the GPIO as a push/pull output */
-    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_direction(M5_LED_GPIO, GPIO_MODE_OUTPUT);
 
     // Create queues
     queue_1 = xQueueCreate(queue_1_len, sizeof(uint16_t));

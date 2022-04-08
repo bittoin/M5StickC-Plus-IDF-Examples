@@ -15,9 +15,14 @@
 /* Can use project configuration menu (idf.py menuconfig) to choose the GPIO to blink,
    or you can edit the following line and set a number here.
 */
-#define BLINK_GPIO 10
+#define M5_LED_GPIO (10)
 #define DELAY_MS 500
-#define APP_CPU 1
+
+#if CONFIG_FREERTOS_UNICORE
+    static const BaseType_t app_cpu = 0;
+#else
+    static const BaseType_t app_cpu = 1;
+#endif
 
 void toggleLed(void *parameter){
     while(true) {
@@ -34,9 +39,9 @@ void toggleLed(void *parameter){
 
 void app_main(void)
 {
-    gpio_reset_pin(BLINK_GPIO);
+    gpio_reset_pin(M5_LED_GPIO);
     /* Set the GPIO as a push/pull output */
-    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_direction(M5_LED_GPIO, GPIO_MODE_OUTPUT);
 
     xTaskCreatePinnedToCore(
         toggleLed,      // Function that will be called when task starts
@@ -45,6 +50,6 @@ void app_main(void)
         NULL,           // Pointer to parameter
         1,              // Task priority
         NULL,           // Pointer to task handler, if it exists
-        APP_CPU         // CoreID of the board (0 or 1)
+        app_cpu         // CoreID of the board (0 or 1)
     );
 }

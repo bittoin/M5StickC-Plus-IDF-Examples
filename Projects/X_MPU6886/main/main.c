@@ -4,7 +4,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#define LED_GPIO (10)
+#define M5_LED_GPIO (10)
 
 #if CONFIG_FREERTOS_UNICORE
     static const BaseType_t app_cpu = 0;
