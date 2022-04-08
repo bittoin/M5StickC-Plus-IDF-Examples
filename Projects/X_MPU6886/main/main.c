@@ -4,9 +4,13 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#define BLINK_GPIO 10
-#define INPUT_BUFFER_SIZE 128
-#define APP_CPU 1
+#define LED_GPIO (10)
+
+#if CONFIG_FREERTOS_UNICORE
+    static const BaseType_t app_cpu = 0;
+#else
+    static const BaseType_t app_cpu = 1;
+#endif
 
 i2c_port_t port = I2C_NUM_0;
 
@@ -35,6 +39,6 @@ void app_main(void)
         NULL,
         1,
         NULL,
-        APP_CPU
+        app_cpu
     );
 }
