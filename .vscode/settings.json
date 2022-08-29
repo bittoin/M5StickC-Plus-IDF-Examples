@@ -13,5 +13,6 @@
         "stdlib.h": "c",
         "mpu6886.h": "c",
         "core2foraws.h": "c"
-    }
+    },
+    "idf.port": "/dev/ttyUSB0"
 }
