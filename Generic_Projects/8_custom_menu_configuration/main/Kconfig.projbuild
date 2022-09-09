@@ -1,0 +1,27 @@
+menu "Meu Menu Modificado"
+
+config MY_BOOL
+    bool "Selecione sim ou nao"
+
+config MY_STRING
+    string "Insira uma string"
+    default "String default nao modificada!"
+        help
+            Isso é uma ajuda caso o usuário precise
+
+config MY_INT
+    int "in int"
+    range 1 15
+
+config SAC_DM_SAMPLE
+    choice
+        bool "Selecione um rate"
+            default RATE_500
+        config RATE_100
+            bool "Opcao para rate 100"
+        config RATE_500
+            bool "Opcao para rate 500"
+        config RATE_1000
+            bool "Opcao para rate 1000"
+    endchoice
+endmenu
