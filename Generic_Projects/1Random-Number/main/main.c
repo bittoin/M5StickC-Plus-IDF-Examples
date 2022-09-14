@@ -8,7 +8,6 @@
 
 void app_main(void)
 {
-    
     while(1) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         int D20 = (esp_random() % 20) + 1;
