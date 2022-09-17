@@ -75,13 +75,14 @@ extern "C" void app_main() {
     while (true) {
         // Read
         MPU.acceleration(&accelRaw);  // fetch raw data from the registers
-        MPU.rotation(&gyroRaw);       // fetch raw data from the registers
+        // MPU.rotation(&gyroRaw);       // fetch raw data from the registers
         // MPU.motion(&accelRaw, &gyroRaw);  // read both in one shot
         // Convert
         accelG = mpud::accelGravity(accelRaw, mpud::ACCEL_FS_4G);
-        gyroDPS = mpud::gyroDegPerSec(gyroRaw, mpud::GYRO_FS_500DPS);
+        // gyroDPS = mpud::gyroDegPerSec(gyroRaw, mpud::GYRO_FS_500DPS);
         // Debug
-        printf("accel: [%+6.2f %+6.2f %+6.2f ] (G) \t\n", accelG.x, accelG.y, accelG.z);
+        // printf("accel: [%+6.2f %+6.2f %+6.2f ] (G) \t\n", accelG.x, accelG.y, accelG.z);
+        printf("aX:%+6.2f,aY:%+6.2f,aZ:%+6.2f\n", accelG.x, accelG.y, accelG.z);
 //        printf("gyro: [%+7.2f %+7.2f %+7.2f ] (º/s)\n", gyroDPS[0], gyroDPS[1], gyroDPS[2]);
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
