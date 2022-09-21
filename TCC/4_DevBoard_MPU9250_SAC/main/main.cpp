@@ -71,7 +71,7 @@ extern "C" void app_main() {
     // ESP_ERROR_CHECK(MPU.setAccelFullScale(mpud::ACCEL_FS_4G));
 
     // Reading sensor data
-    printf("Reading sensor data:\n");
+    // printf("Reading sensor data:\n");
     mpud::raw_axes_t accelRaw;   // x, y, z axes as int16
     mpud::raw_axes_t gyroRaw;    // x, y, z axes as int16
     mpud::float_axes_t accelG;   // accel axes in (g) gravity format
@@ -93,6 +93,8 @@ extern "C" void app_main() {
         // MPU.motion(&accelRaw, &gyroRaw);  // read both in one shot
         // Convert
         accelG = mpud::accelGravity(accelRaw, mpud::ACCEL_FS_4G);
+
+        // printf("aX:%+6.2f,aY:%+6.2f,aZ:%+6.2f\n", accelG.x, accelG.y, accelG.z);
         // gyroDPS = mpud::gyroDegPerSec(gyroRaw, mpud::GYRO_FS_500DPS);
         // Debug
         // printf("accel: [%+6.2f %+6.2f %+6.2f ] (G) \t\n", accelG.x, accelG.y, accelG.z);
@@ -124,8 +126,8 @@ extern "C" void app_main() {
             rho_x = (float)peaks_x / (float)SAMPLE_SIZE;
             rho_y = (float)peaks_y / (float)SAMPLE_SIZE;
             rho_z = (float)peaks_z / (float)SAMPLE_SIZE;
-            // printf("MPU6886: rho_x: %f, rho_y: %f, rho_z: %f\n", rho_x, rho_y, rho_z);
-            ESP_LOGI("SAC_DM", "count:%d, rho_x: %f, rho_y: %f, rho_z: %f", count, rho_x, rho_y, rho_z);
+            printf("rho_x:%f,rho_y:%f,rho_z:%f\n", rho_x, rho_y, rho_z);
+            // ESP_LOGI("SAC_DM", "count:%d, rho_x: %f, rho_y: %f, rho_z: %f", count, rho_x, rho_y, rho_z);
             readings = 1;
             peaks_x = 0;
             peaks_y = 0;
