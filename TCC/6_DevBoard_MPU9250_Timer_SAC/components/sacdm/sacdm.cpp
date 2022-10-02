@@ -44,10 +44,10 @@ void SAC_DM::initialize_sac_dm()
 }
 
 void SAC_DM::calculate() {
-    // Read
+    // Read acc
     MPU.acceleration(&accelRaw);  // fetch raw data from the registers
-    
-    accelG = mpud::accelGravity(accelRaw, mpud::ACCEL_FS_8G);
+    accelG = mpud::accelGravity(accelRaw, mpud::ACCEL_FS_4G);
+    // ESP_LOGI("SAC_DM", "acc_x: %f, acc_y: %f, acc_z: %f", accelG.x, accelG.x, accelG.z);
 
     signals_x[0] = signals_x[1];
     signals_x[1] = signals_x[2];
@@ -64,21 +64,50 @@ void SAC_DM::calculate() {
     readings++;
 
     if (readings > 2) {
+        // if (signals_x[1] > signals_x[0] && signals_x[1] > signals_x[2]){
+        //     if (signals_x[1] < 0){
+        //         float x0 = 1.0/(signals_x[0]*-1);
+        //         float x1 = 1.0/(signals_x[1]*-1);
+        //         float x2 = 1.0/(signals_x[2]*-1);
+        //         if (x1 > x0*threshold && x1 > x2*threshold) peaks_x++;
+        //     }else{
+        //         if (signals_x[1] > signals_x[0]*threshold && signals_x[1] > signals_x[2]*threshold) peaks_x++;
+        //     }
+        // }
+        // if (signals_y[1] > signals_y[0] && signals_y[1] > signals_y[2]){
+        //     if (signals_y[1] < 0){
+        //         float y0 = 1.0/(signals_y[0]*-1);
+        //         float y1 = 1.0/(signals_y[1]*-1);
+        //         float y2 = 1.0/(signals_y[2]*-1);
+        //         if (y1 > y0*threshold && y1 > y2*threshold) peaks_y++;
+        //     }else{
+        //         if (signals_y[1] > signals_y[0]*threshold && signals_y[1] > signals_y[2]*threshold) peaks_y++;
+        //     }
+        // }
+        // if (signals_z[1] > signals_z[0] && signals_z[1] > signals_z[2]){
+        //     if (signals_z[1] < 0){
+        //         float z0 = 1.0/(signals_z[0]*-1);
+        //         float z1 = 1.0/(signals_z[1]*-1);
+        //         float z2 = 1.0/(signals_z[2]*-1);
+        //         if (z1 > z0*threshold && z1 > z2*threshold) peaks_z++;
+        //     }else{
+        //         if (signals_z[1] > signals_z[0]*threshold && signals_z[1] > signals_z[2]*threshold) peaks_z++;
+        //     }
+        // }
+
         if (signals_x[1] > signals_x[0]*threshold && signals_x[1] > signals_x[2]*threshold) peaks_x++;
         if (signals_y[1] > signals_y[0]*threshold && signals_y[1] > signals_y[2]*threshold) peaks_y++;
         if (signals_z[1] > signals_z[0]*threshold && signals_z[1] > signals_z[2]*threshold) peaks_z++;
-        count++;
     }
     if (readings == SAMPLE_SIZE) {
         rho_x = (float)peaks_x / (float)SAMPLE_SIZE;
         rho_y = (float)peaks_y / (float)SAMPLE_SIZE;
         rho_z = (float)peaks_z / (float)SAMPLE_SIZE;
         // printf("rho_x:%f,rho_y:%f,rho_z:%f\n", rho_x, rho_y, rho_z);
-        ESP_LOGI("SAC_DM", "count:%d, rho_x: %f, rho_y: %f, rho_z: %f", count, rho_x, rho_y, rho_z);
+        ESP_LOGI("SAC_DM", "rho_x: %f, rho_y: %f, rho_z: %f", rho_x, rho_y, rho_z);
         readings = 1;
         peaks_x = 0;
         peaks_y = 0;
         peaks_z = 0;
-        count = 0;
     }
 }

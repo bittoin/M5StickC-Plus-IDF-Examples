@@ -61,38 +61,88 @@ extern "C" void app_main(void)
     // SAC-DM Variable declaration
     long lastMsg = 0, loopTimer = 0;
     int value = 0, readings = 0, peaks_x = 0, peaks_y = 0, peaks_z = 0;
-    float signals_x[3] = {0, 0, 0};
-    float signals_y[3] = {0, 0, 0};
-    float signals_z[3] = {0, 0, 0};
+    // float signals_x[3] = {0, 0, 0};
+    // float signals_y[3] = {0, 0, 0};
+    // float signals_z[3] = {0, 0, 0};
     double rho_x, rho_y, rho_z;
+
+    int16_t signals_x[3] = {0, 0, 0};
+    int16_t signals_y[3] = {0, 0, 0};
+    int16_t signals_z[3] = {0, 0, 0};
+
+    int16_t accX = 0;
+    int16_t accY = 0;
+    int16_t accZ = 0;
 
     mpu6886_init(&port);
     vTaskDelay(500 / portTICK_PERIOD_MS);
     //printf( "MPU6886 main: Init MPU6886 finished\n\n" );
     while(1){
-        mpu6886_accel_data_get(&aX, &aY, &aZ);
+        // mpu6886_accel_data_get(&aX, &aY, &aZ);
+
         // printf("ax:%f,aY:%f,aZ:%f\n", aX, aY, aZ);
         // printf("MPU6886: aX: %f, aY: %f, aZ: %f\n", aX, aY, aZ);
+        // ESP_LOGI("acc_values", "aX: %f, aY: %f, aZ: %f", aX, aY, aZ);
         // vTaskDelay(50 / portTICK_PERIOD_MS);
+
+        // signals_x[0] = signals_x[1];
+        // signals_x[1] = signals_x[2];
+        // signals_x[2] = aX;
+
+        // signals_y[0] = signals_y[1];
+        // signals_y[1] = signals_y[2];
+        // signals_y[2] = aY;
+
+        // signals_z[0] = signals_z[1];
+        // signals_z[1] = signals_z[2];
+        // signals_z[2] = aZ;
+        
+        esp_err_t err = mpu6886_adc_accel_get( &accX, &accY, &accZ );
+
+        if (err == ESP_OK){
+            // ESP_LOGI("acc_values", "aX: %d, aY: %d, aZ: %d", accX, accY, accZ);
+        }else{
+            ESP_LOGE("acc_values", "Couldn't get values");
+        }
 
         signals_x[0] = signals_x[1];
         signals_x[1] = signals_x[2];
-        signals_x[2] = aX;
+        signals_x[2] = accX;
 
         signals_y[0] = signals_y[1];
         signals_y[1] = signals_y[2];
-        signals_y[2] = aY;
+        signals_y[2] = accY;
 
         signals_z[0] = signals_z[1];
         signals_z[1] = signals_z[2];
-        signals_z[2] = aZ;
-        
+        signals_z[2] = accZ;
+
         readings++;
 
         if (readings > 2) {
-            if (signals_x[1] > signals_x[0]*threshold && signals_x[1] > signals_x[2]*threshold) peaks_x++;
-            if (signals_y[1] > signals_y[0]*threshold && signals_y[1] > signals_y[2]*threshold) peaks_y++;
-            if (signals_z[1] > signals_z[0]*threshold && signals_z[1] > signals_z[2]*threshold) peaks_z++;
+            // if (signals_x[0] < 0 && signals_x[2] < 0){
+            //     int16_t x0 = signals_x[0]*0.8;
+            //     int16_t x2 = signals_x[2]*0.8;
+            //     if (signals_x[1] > x0 && signals_x[1] > x2) peaks_x++;
+            // }else{
+                if ((float)signals_x[1] > (float)signals_x[0]*threshold && (float)signals_x[1] > (float)signals_x[2]*threshold) peaks_x++;
+            // }
+
+            // if (signals_y[0] < 0 && signals_y[2] < 0){
+            //     int16_t y0 = signals_y[0]*0.8;
+            //     int16_t y2 = signals_y[2]*0.8;
+            //     if (signals_y[1] > y0 && signals_y[1] > y2) peaks_y++;
+            // }else{
+                if ((float)signals_y[1] > (float)signals_y[0]*threshold && (float)signals_y[1] > (float)signals_y[2]*threshold) peaks_y++;
+            // }
+
+            // if (signals_z[0] < 0 && signals_z[2] < 0){
+            //     int16_t z0 = signals_z[0]*0.8;
+            //     int16_t z2 = signals_z[2]*0.8;
+            //     if (signals_z[1] > z0 && signals_z[1] > z2) peaks_z++;
+            // }else{
+                if ((float)signals_z[1] > (float)signals_z[0]*threshold && (float)signals_z[1] > (float)signals_z[2]*threshold) peaks_z++;
+            // }
         }
         if (readings == SAMPLE_SIZE) {
             rho_x = (float)peaks_x / (float)SAMPLE_SIZE;
