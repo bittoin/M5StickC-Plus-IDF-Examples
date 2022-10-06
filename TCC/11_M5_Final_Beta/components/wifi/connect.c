@@ -10,7 +10,12 @@
 const static char *TAG = "WIFI";
 esp_netif_t *esp_netif;
 
+/* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t wifi_events;
+
+/* The event group allows multiple bits for each event, but we only care about two events:
+ * - we are connected to the AP with an IP
+ * - we failed to connect after the maximum amount of retries */
 static const int CONNECTED_GOT_IP = BIT0;
 static const int DISCONNECTED = BIT1;
 

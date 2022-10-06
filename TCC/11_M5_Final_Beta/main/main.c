@@ -16,7 +16,8 @@
 
 // Bibliotecas próprias para o projeto
 #include "mpu6886.h"
-#include "connect.h"
+// #include "connect.h"
+#include "connect_sta.h"
 
 // Tratamento de JSON
 #include "cJSON.h"
@@ -258,9 +259,17 @@ void app_main(void) {
 
     // Inicializa wifi e HTTP Client
     ESP_LOGI("main", "Inicializando WiFi");
-    ESP_ERROR_CHECK( nvs_flash_init() );
-    wifi_init();
-    ESP_ERROR_CHECK(wifi_connect_sta("ESPTest", "esp32_123", 10000));
+    //Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    // ESP_ERROR_CHECK( nvs_flash_init() );
+    // wifi_init();
+    // ESP_ERROR_CHECK(wifi_connect_sta("ESPTest", "esp32_123", 10000));
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+    wifi_init_sta();
 
     // xTaskCreatePinnedToCore(&send_sac_dm_notification, "SacDmCalculator", 4096, NULL, 3, NULL, 1);
     xTaskCreatePinnedToCore(&receive_http_notification, "SupabaseClient", 4096, NULL, 5, &receiverHandler, 0);
