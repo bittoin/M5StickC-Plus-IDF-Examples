@@ -16,7 +16,6 @@
 
 // Bibliotecas próprias para o projeto
 #include "mpu6886.h"
-// #include "connect.h"
 #include "connect_sta.h"
 
 // Tratamento de JSON
@@ -54,8 +53,8 @@ esp_err_t on_client_data(esp_http_client_event_t *evt){
     switch(evt->event_id){
         // Quando chega dados
         case HTTP_EVENT_ON_DATA:
-            ESP_LOGI("on_client_data", "Length=%d", evt->data_len);
-            printf("%.*s\n", evt->data_len, (char *)evt->data);
+            // ESP_LOGI("on_client_data", "Length=%d", evt->data_len);
+            // printf("%.*s\n", evt->data_len, (char *)evt->data);
             break;
         default:
             break;
@@ -69,7 +68,7 @@ void fetch_data(){
         .url = "https://nuopbiwoomjqqfgdasxh.supabase.co/rest/v1/Teste?select=*",
         .method = HTTP_METHOD_GET,
         .event_handler = on_client_data,
-        .buffer_size = 10000,              /*!< HTTP receive buffer size */
+        .buffer_size = 15000,              /*!< HTTP receive buffer size */
         // .buffer_size_tx = 10000           /*!< HTTP transmit buffer size */
     };
 
@@ -92,7 +91,7 @@ char *create_sacdm_body()
 {
     cJSON *value = cJSON_CreateObject();
     char sac_values[100] = "";
-    sprintf(sac_values, "rX: %f, rY: %f, rZ: %f", rho_x, rho_y, rho_z);
+    sprintf(sac_values, "rX:%f,rY:%f,rZ:%f", rho_x, rho_y, rho_z);
     cJSON_AddStringToObject(value, "value", sac_values);
     char *payload_body = cJSON_Print(value);
     
@@ -238,17 +237,27 @@ void creating_timer(){
 
 void receive_http_notification(void *params){
     ESP_LOGI("main", "Inicializando HTTP Client");
-    esp_http_client_handle_t client = esp_http_client_init(&esp_http_client_config);
-    esp_http_client_set_header(client, "Content-Type", "application/json");
-    esp_http_client_set_header(client, "Prefer", "return=representation");
-    esp_http_client_set_header(client, "apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
-    esp_http_client_set_header(client, "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
+    esp_http_client_handle_t *client = (esp_http_client_handle_t *) params;
+    // esp_http_client_handle_t client = esp_http_client_init(&esp_http_client_config);
+    // esp_http_client_set_header(client, "Content-Type", "application/json");
+    // esp_http_client_set_header(client, "Prefer", "return=representation");
+    // esp_http_client_set_header(client, "apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
+    // esp_http_client_set_header(client, "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
     
     while(true){
         ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
         ESP_LOGI("HTTP Client", "HTTP POST Request received... Sending to Supabase");
         send_data(client);
     }
+}
+
+void init_http_client(esp_http_client_handle_t* client) {
+    ESP_LOGI("main", "Inicializando HTTP Client");
+    // esp_http_client_handle_t client = esp_http_client_init(&esp_http_client_config);
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    esp_http_client_set_header(client, "Prefer", "return=representation");
+    esp_http_client_set_header(client, "apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
+    esp_http_client_set_header(client, "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
 }
 
 void app_main(void) {
@@ -259,11 +268,10 @@ void app_main(void) {
 
     // Inicializa wifi e HTTP Client
     ESP_LOGI("main", "Inicializando WiFi");
+
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
-    // ESP_ERROR_CHECK( nvs_flash_init() );
-    // wifi_init();
-    // ESP_ERROR_CHECK(wifi_connect_sta("ESPTest", "esp32_123", 10000));
+
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
       ESP_ERROR_CHECK(nvs_flash_erase());
       ret = nvs_flash_init();
@@ -271,8 +279,10 @@ void app_main(void) {
     ESP_ERROR_CHECK(ret);
     wifi_init_sta();
 
+    esp_http_client_handle_t client = esp_http_client_init(&esp_http_client_config);
+    init_http_client(client);
     // xTaskCreatePinnedToCore(&send_sac_dm_notification, "SacDmCalculator", 4096, NULL, 3, NULL, 1);
-    xTaskCreatePinnedToCore(&receive_http_notification, "SupabaseClient", 4096, NULL, 5, &receiverHandler, 0);
+    xTaskCreatePinnedToCore(&receive_http_notification, "SupabaseClient", 4096, (void *)client, 5, &receiverHandler, NULL);
 
     esp_timer_create(&esp_timer_create_args, &esp_timer_handle);
     esp_timer_start_periodic(esp_timer_handle, 2*1000);
