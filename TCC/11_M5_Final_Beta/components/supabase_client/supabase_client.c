@@ -4,25 +4,27 @@
 
 static const char *TAG = "SUPABASE_CLIENT";
 
+static char auth[250] = "Bearer ";
 static esp_http_client_handle_t client;
 
 void spb_open(void *config_info)
 {
-    // supabase_config *config = (supabase_config*)config_info;
+    supabase_config *config = (supabase_config*)config_info;
     esp_http_client_config_t esp_http_client_config = {
-        .url = "https://nuopbiwoomjqqfgdasxh.supabase.co/rest/v1/Teste2",
+        .url = config->table_url,
         .method = HTTP_METHOD_POST,
         .event_handler = on_client_data,
         .buffer_size = 15000,              /*!< HTTP receive buffer size */
-        // .buffer_size_tx = 10000           /*!< HTTP transmit buffer size */
+        .buffer_size_tx = 15000           /*!< HTTP transmit buffer size */
     };
 
     ESP_LOGI(TAG, "Inicializando Supabase (HTTP) Client");
+    strcat(auth, config->api_key);
     client = esp_http_client_init(&esp_http_client_config);
     esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_header(client, "Prefer", "return=representation");
-    esp_http_client_set_header(client, "apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
-    esp_http_client_set_header(client, "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
+    esp_http_client_set_header(client, "apikey", config->api_key);
+    esp_http_client_set_header(client, "Authorization", auth);
 }
 
 void spb_close(void)
@@ -37,7 +39,6 @@ void spb_read(void)
 
 void spb_write(void *data)
 {
-    ESP_LOGI(TAG, "Writing data to Supabase...");
     char *payload_body = (char*) data;
     esp_http_client_set_post_field(client, data, strlen(data));
     esp_err_t err = esp_http_client_perform(client);

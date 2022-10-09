@@ -7,7 +7,6 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "nvs_flash.h"
-#include "esp_http_client.h"
 #include "esp_timer.h"
 #include "sdkconfig.h"
 
@@ -45,17 +44,6 @@ int16_t accZ = 0;
 
 i2c_port_t port = I2C_NUM_0;
 
-/*
-    ***************************************************
-    Definição de variáveis e funções para o HTTP Client
-    ***************************************************
-*/
-
-const supabase_config sbp_config = {
-    .table_url = "https://nuopbiwoomjqqfgdasxh.supabase.co/rest/v1/Teste2",
-    .api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s"
-};
-
 char *create_sacdm_payload_body()
 {
     cJSON *value = cJSON_CreateObject();
@@ -72,6 +60,7 @@ char *create_sacdm_payload_body()
     Definição de variáveis e funções das notificações
     *************************************************
 */
+
 static TaskHandle_t receiverHandler = NULL;
 
 void send_sac_dm_notification(void *params) 
@@ -188,8 +177,13 @@ void creating_timer()
 
 void receive_http_notification(void *params)
 {
-    ESP_LOGI("main", "Inicializando HTTP Client");
-    
+    // Configura e inicializa supabase
+    const supabase_config sbp_config = {
+        .table_url = "",
+        .api_key = ""
+    };
+    spb_open(&sbp_config);
+
     while(true) {
         ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
         spb_write(create_sacdm_payload_body());
@@ -198,16 +192,14 @@ void receive_http_notification(void *params)
 
 void app_main(void) 
 {
-    // Inicializa MPU
+    // Inicializa I2C + MPU
     ESP_LOGI("main", "Inicializando MPU6886");
     mpu6886_init(&port);
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
-    // Inicializa wifi e HTTP Client
+    // Inicializa WiFi e conecta no AP
     ESP_LOGI("main", "Inicializando WiFi");
-
-    //Initialize NVS
-    esp_err_t ret = nvs_flash_init();
+    esp_err_t ret = nvs_flash_init();        //Initialize NVS
 
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
       ESP_ERROR_CHECK(nvs_flash_erase());
@@ -217,11 +209,9 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
     wifi_init_sta();
 
-    // Inicializa supabase
-    spb_open(&sbp_config);
-
     xTaskCreatePinnedToCore(&receive_http_notification, "SupabaseClient", 4096, NULL, 5, &receiverHandler, 1);
 
+    // Inicia timer para calculo do SAC-DM
     esp_timer_create(&esp_timer_create_args, &esp_timer_handle);
-    esp_timer_start_periodic(esp_timer_handle, 2*1000);
+    esp_timer_start_periodic(esp_timer_handle, 8*1000);
 }
