@@ -1,9 +1,4 @@
 #include <stdio.h>
-#include "sdkconfig.h"
-
-// Bibliotecas do freeRTOS
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 // Bibliotecas do ESP
 #include "esp_system.h"
@@ -13,13 +8,18 @@
 #include "nvs_flash.h"
 #include "esp_http_client.h"
 #include "esp_timer.h"
+#include "sdkconfig.h"
+
+// Tratamento de JSON
+#include "cJSON.h"
+
+// Bibliotecas do freeRTOS
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 // Bibliotecas próprias para o projeto
 #include "mpu6886.h"
 #include "connect_sta.h"
-
-// Tratamento de JSON
-#include "cJSON.h"
 
 /*
     ************************************
@@ -49,8 +49,10 @@ i2c_port_t port = I2C_NUM_0;
     ***************************************************
 */
 static const char *TAG = "REST";
-esp_err_t on_client_data(esp_http_client_event_t *evt){
-    switch(evt->event_id){
+
+esp_err_t on_client_data(esp_http_client_event_t *evt)
+{
+    switch(evt->event_id) {
         // Quando chega dados
         case HTTP_EVENT_ON_DATA:
             // ESP_LOGI("on_client_data", "Length=%d", evt->data_len);
@@ -63,7 +65,8 @@ esp_err_t on_client_data(esp_http_client_event_t *evt){
     return ESP_OK;
 }
 
-void fetch_data(){
+void fetch_data()
+{
     esp_http_client_config_t esp_http_client_config = {
         .url = "https://nuopbiwoomjqqfgdasxh.supabase.co/rest/v1/Teste?select=*",
         .method = HTTP_METHOD_GET,
@@ -106,7 +109,8 @@ esp_http_client_config_t esp_http_client_config = {
     // .buffer_size_tx = 10000           /*!< HTTP transmit buffer size */
 };
 
-void send_data(esp_http_client_handle_t client){
+void send_data(esp_http_client_handle_t client)
+{
     char *payload_body = create_sacdm_body();
     esp_http_client_set_post_field(client, payload_body, strlen(payload_body));
     
@@ -128,7 +132,8 @@ void send_data(esp_http_client_handle_t client){
 */
 static TaskHandle_t receiverHandler = NULL;
 
-void send_sac_dm_notification(void *params) {
+void send_sac_dm_notification(void *params) 
+{
     // Inicializa MPU
     ESP_LOGI("main", "Inicializando MPU6886");
     mpu6886_init(&port);
@@ -180,14 +185,16 @@ void send_sac_dm_notification(void *params) {
     }
 }
 
-void sac_dm_calculate(void *params){
+void sac_dm_calculate(void *params)
+{
     // Atualiza dados da MPU em cada variável de aceleração
     esp_err_t err = mpu6886_adc_accel_get( &accX, &accY, &accZ );
 
     // Testa se houve algum erro na coleta dos dados
-    if (err == ESP_OK){
+    if (err == ESP_OK) {
         // ESP_LOGI("acc_values", "aX: %d, aY: %d, aZ: %d", accX, accY, accZ);
-    }else{
+    }
+    else {
         ESP_LOGE("acc_values", "Couldn't get values");
     }
 
@@ -211,6 +218,7 @@ void sac_dm_calculate(void *params){
         if ((float)signals_z[1] > (float)signals_z[0]*threshold && (float)signals_z[1] > (float)signals_z[2]*threshold) peaks_z++;
 
     }
+
     if (readings == SAMPLE_SIZE) {
         rho_x = (float)peaks_x / (float)SAMPLE_SIZE;
         rho_y = (float)peaks_y / (float)SAMPLE_SIZE;
@@ -230,12 +238,14 @@ const esp_timer_create_args_t esp_timer_create_args = {
     };
 esp_timer_handle_t esp_timer_handle;
 
-void creating_timer(){
+void creating_timer()
+{
     esp_timer_create(&esp_timer_create_args, &esp_timer_handle);
     esp_timer_start_periodic(esp_timer_handle, 2*1000);
 }
 
-void receive_http_notification(void *params){
+void receive_http_notification(void *params)
+{
     ESP_LOGI("main", "Inicializando HTTP Client");
     esp_http_client_handle_t *client = (esp_http_client_handle_t *) params;
     // esp_http_client_handle_t client = esp_http_client_init(&esp_http_client_config);
@@ -244,14 +254,15 @@ void receive_http_notification(void *params){
     // esp_http_client_set_header(client, "apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
     // esp_http_client_set_header(client, "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
     
-    while(true){
+    while(true) {
         ulTaskNotifyTake(pdFALSE, portMAX_DELAY);
         ESP_LOGI("HTTP Client", "HTTP POST Request received... Sending to Supabase");
         send_data(client);
     }
 }
 
-void init_http_client(esp_http_client_handle_t* client) {
+void init_http_client(esp_http_client_handle_t* client) 
+{
     ESP_LOGI("main", "Inicializando HTTP Client");
     // esp_http_client_handle_t client = esp_http_client_init(&esp_http_client_config);
     esp_http_client_set_header(client, "Content-Type", "application/json");
@@ -260,7 +271,8 @@ void init_http_client(esp_http_client_handle_t* client) {
     esp_http_client_set_header(client, "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
 }
 
-void app_main(void) {
+void app_main(void) 
+{
     // Inicializa MPU
     ESP_LOGI("main", "Inicializando MPU6886");
     mpu6886_init(&port);
@@ -276,6 +288,7 @@ void app_main(void) {
       ESP_ERROR_CHECK(nvs_flash_erase());
       ret = nvs_flash_init();
     }
+
     ESP_ERROR_CHECK(ret);
     wifi_init_sta();
 
