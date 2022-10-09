@@ -1,0 +1,18 @@
+#pragma once
+
+#include "esp_http_client.h"
+#include "esp_log.h"
+
+typedef struct {
+    char *table_url;
+    char *api_key;
+} supabase_config;
+
+static esp_err_t on_client_data(esp_http_client_event_t *evt);
+static void fetch_data(void);
+
+void spb_open(void *config_info);
+void spb_close(void);
+void spb_read(void);
+void spb_write(void *data);
+// void spb_change_config(void *config_data);
