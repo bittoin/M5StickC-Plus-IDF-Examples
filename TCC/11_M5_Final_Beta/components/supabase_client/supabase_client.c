@@ -69,7 +69,7 @@ esp_err_t on_client_data(esp_http_client_event_t *evt)
 static void fetch_data(void)
 {
     esp_http_client_config_t esp_http_client_config = {
-        .url = "https://nuopbiwoomjqqfgdasxh.supabase.co/rest/v1/Teste?select=*",
+        .url = "",
         .method = HTTP_METHOD_GET,
         .event_handler = on_client_data,
         .buffer_size = 15000,              /*!< HTTP receive buffer size */
@@ -77,8 +77,8 @@ static void fetch_data(void)
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&esp_http_client_config);
-    esp_http_client_set_header(client, "apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
-    esp_http_client_set_header(client, "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s");
+    esp_http_client_set_header(client, "apikey", "");
+    esp_http_client_set_header(client, "Authorization", "Bearer ");
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK){
         ESP_LOGI("HTTP_Client", "HTTP GET status = %d, content_length = %d",
