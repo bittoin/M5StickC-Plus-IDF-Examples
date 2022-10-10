@@ -40,7 +40,7 @@ void spb_read(void)
 void spb_write(void *data)
 {
     char *payload_body = (char*) data;
-    esp_http_client_set_post_field(client, data, strlen(data));
+    esp_http_client_set_post_field(client, payload_body, strlen(payload_body));
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "Successfully POST sent. Status = %d, Content_length = %d",
@@ -66,7 +66,7 @@ esp_err_t on_client_data(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-static void fetch_data(void)
+void fetch_data(void)
 {
     esp_http_client_config_t esp_http_client_config = {
         .url = "",
