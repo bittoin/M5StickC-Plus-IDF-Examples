@@ -10,161 +10,17 @@
 #include "esp_timer.h"
 #include "sdkconfig.h"
 
-// Tratamento de JSON
-#include "cJSON.h"
-
 // Bibliotecas do freeRTOS
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 // Bibliotecas próprias para o projeto
-#include "mpu6886.h"
 #include "connect_sta.h"
 #include "supabase_client.h"
-
-/*
-    ************************************
-    Definição de variáveis para o SAC-DM
-    ************************************
-*/
-#define SAMPLE_SIZE 500
-
-float threshold = 1.20;
-long lastMsg = 0, loopTimer = 0;
-int value = 0, readings = 0, peaks_x = 0, peaks_y = 0, peaks_z = 0;
-double rho_x, rho_y, rho_z;
-
-int16_t signals_x[3] = {0, 0, 0};
-int16_t signals_y[3] = {0, 0, 0};
-int16_t signals_z[3] = {0, 0, 0};
-
-int16_t accX = 0;
-int16_t accY = 0;
-int16_t accZ = 0;
-
-i2c_port_t port = I2C_NUM_0;
-
-char *create_sacdm_payload_body()
-{
-    cJSON *value = cJSON_CreateObject();
-    char sac_values[100] = "";
-    sprintf(sac_values, "rX:%f,rY:%f,rZ:%f", rho_x, rho_y, rho_z);
-    cJSON_AddStringToObject(value, "value", sac_values);
-    char *payload_body = cJSON_Print(value);
-    
-    return payload_body;
-}
-
-/*
-    *************************************************
-    Definição de variáveis e funções das notificações
-    *************************************************
-*/
-
-static TaskHandle_t receiverHandler = NULL;
-
-void send_sac_dm_notification(void *params) 
-{
-    // Inicializa MPU
-    ESP_LOGI("main", "Inicializando MPU6886");
-    mpu6886_init(&port);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-
-    while(1){
-        // Atualiza dados da MPU em cada variável de aceleração
-        esp_err_t err = mpu6886_adc_accel_get( &accX, &accY, &accZ );
-
-        // Testa se houve algum erro na coleta dos dados
-        if (err == ESP_OK){
-            // ESP_LOGI("acc_values", "aX: %d, aY: %d, aZ: %d", accX, accY, accZ);
-        }else{
-            ESP_LOGE("acc_values", "Couldn't get values");
-        }
-
-        signals_x[0] = signals_x[1];
-        signals_x[1] = signals_x[2];
-        signals_x[2] = accX;
-
-        signals_y[0] = signals_y[1];
-        signals_y[1] = signals_y[2];
-        signals_y[2] = accY;
-
-        signals_z[0] = signals_z[1];
-        signals_z[1] = signals_z[2];
-        signals_z[2] = accZ;
-
-        readings++;
-
-        if (readings > 2) {
-            if ((float)signals_x[1] > (float)signals_x[0]*threshold && (float)signals_x[1] > (float)signals_x[2]*threshold) peaks_x++;
-            if ((float)signals_y[1] > (float)signals_y[0]*threshold && (float)signals_y[1] > (float)signals_y[2]*threshold) peaks_y++;
-            if ((float)signals_z[1] > (float)signals_z[0]*threshold && (float)signals_z[1] > (float)signals_z[2]*threshold) peaks_z++;
-
-        }
-        if (readings == SAMPLE_SIZE) {
-            rho_x = (float)peaks_x / (float)SAMPLE_SIZE;
-            rho_y = (float)peaks_y / (float)SAMPLE_SIZE;
-            rho_z = (float)peaks_z / (float)SAMPLE_SIZE;
-            // ESP_LOGI("SAC_DM", "rho_x: %f, rho_y: %f, rho_z: %f", rho_x, rho_y, rho_z);
-            xTaskNotifyGive(receiverHandler);
-            readings = 1;
-            peaks_x = 0;
-            peaks_y = 0;
-            peaks_z = 0;
-        }
-        // vTaskDelay(10 / portTICK_PERIOD_MS);
-    }
-}
-
-void sac_dm_calculate(void *params)
-{
-    // Atualiza dados da MPU em cada variável de aceleração
-    esp_err_t err = mpu6886_adc_accel_get( &accX, &accY, &accZ );
-
-    // Testa se houve algum erro na coleta dos dados
-    if (err == ESP_OK) {
-        // ESP_LOGI("acc_values", "aX: %d, aY: %d, aZ: %d", accX, accY, accZ);
-    }
-    else {
-        ESP_LOGE("acc_values", "Couldn't get values");
-    }
-
-    signals_x[0] = signals_x[1];
-    signals_x[1] = signals_x[2];
-    signals_x[2] = accX;
-
-    signals_y[0] = signals_y[1];
-    signals_y[1] = signals_y[2];
-    signals_y[2] = accY;
-
-    signals_z[0] = signals_z[1];
-    signals_z[1] = signals_z[2];
-    signals_z[2] = accZ;
-
-    readings++;
-
-    if (readings > 2) {
-        if ((float)signals_x[1] > (float)signals_x[0]*threshold && (float)signals_x[1] > (float)signals_x[2]*threshold) peaks_x++;
-        if ((float)signals_y[1] > (float)signals_y[0]*threshold && (float)signals_y[1] > (float)signals_y[2]*threshold) peaks_y++;
-        if ((float)signals_z[1] > (float)signals_z[0]*threshold && (float)signals_z[1] > (float)signals_z[2]*threshold) peaks_z++;
-
-    }
-
-    if (readings == SAMPLE_SIZE) {
-        rho_x = (float)peaks_x / (float)SAMPLE_SIZE;
-        rho_y = (float)peaks_y / (float)SAMPLE_SIZE;
-        rho_z = (float)peaks_z / (float)SAMPLE_SIZE;
-        // ESP_LOGI("SAC_DM", "rho_x: %f, rho_y: %f, rho_z: %f", rho_x, rho_y, rho_z);
-        xTaskNotifyGive(receiverHandler);
-        readings = 1;
-        peaks_x = 0;
-        peaks_y = 0;
-        peaks_z = 0;
-    }
-}
+#include "sacdm_manager.h"
 
 const esp_timer_create_args_t esp_timer_create_args = {
-        .callback = sac_dm_calculate,
+        .callback = sacdm_calculate,
         .name = "SAC Timer"
     };
 esp_timer_handle_t esp_timer_handle;
@@ -190,12 +46,12 @@ void receive_http_notification(void *params)
     }
 }
 
+TaskHandle_t notify_handler = NULL;
+
 void app_main(void) 
 {
-    // Inicializa I2C + MPU
-    ESP_LOGI("main", "Inicializando MPU6886");
-    mpu6886_init(&port);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    // SAC_DM manager
+    sacdm_init(&notify_handler);
 
     // Inicializa WiFi e conecta no AP
     ESP_LOGI("main", "Inicializando WiFi");
@@ -209,7 +65,7 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
     wifi_init_sta();
 
-    xTaskCreatePinnedToCore(&receive_http_notification, "SupabaseClient", 4096, NULL, 5, &receiverHandler, 1);
+    xTaskCreatePinnedToCore(&receive_http_notification, "SupabaseClient", 4096, NULL, 5, &notify_handler, 1);
 
     // Inicia timer para calculo do SAC-DM
     esp_timer_create(&esp_timer_create_args, &esp_timer_handle);
