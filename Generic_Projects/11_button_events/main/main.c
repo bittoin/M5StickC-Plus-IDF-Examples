@@ -21,6 +21,7 @@
 #define M5_LED GPIO_NUM_10
 #define M5_BUZZER GPIO_NUM_2
 
+const static char* TAG = "button_example";
 static int led_state = 1;
 
 // create gpio button
@@ -32,11 +33,12 @@ button_config_t gpio_btn_cfg = {
     },
 };
 
-const static char* TAG = "button_example";
+static int click_counter = 0;
 
 static void button_single_click_cb(void *arg)
 {
-    ESP_LOGI(TAG, "BUTTON_SINGLE_CLICK");
+    ESP_LOGI(TAG, "(%d)BUTTON_SINGLE_CLICK", click_counter);
+    click_counter++;
     gpio_set_level(M5_LED, led_state);
     led_state = !led_state;
 }

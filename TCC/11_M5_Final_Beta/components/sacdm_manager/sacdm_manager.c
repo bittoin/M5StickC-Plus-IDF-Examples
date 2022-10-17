@@ -48,7 +48,7 @@ void sacdm_init(TaskHandle_t *notify_handler)
     sacdm_acc_provider_init();
 }
 
-void sacdm_close(void)
+void sacdm_reset(void)
 {
     value = 0; 
     readings = 0; 

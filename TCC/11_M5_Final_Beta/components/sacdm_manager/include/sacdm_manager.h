@@ -5,6 +5,6 @@
 #include "sacdm_acc_provider.h"
 
 void sacdm_init(TaskHandle_t *notify_handler);
-void sacdm_close(void);
+void sacdm_reset(void);
 void sacdm_calculate(void);
 char *create_sacdm_payload_body(void);
