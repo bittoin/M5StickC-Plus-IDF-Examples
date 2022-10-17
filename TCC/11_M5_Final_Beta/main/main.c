@@ -45,7 +45,7 @@ button_config_t gpio_btn_cfg = {
     },
 };
 
-static void button_single_click_cb(void *arg)
+static void button_single_click_cb()
 {
     if (esp_timer_is_active(esp_timer_handle) == 0) {
         ESP_LOGI("Button_A", "Starting SAC-DM System");
@@ -64,7 +64,7 @@ static void button_single_click_cb(void *arg)
 void receive_http_notification(void *params)
 {
     // Configura e inicializa supabase
-    const supabase_config sbp_config = {
+    supabase_config sbp_config = {
         .table_url = "https://nuopbiwoomjqqfgdasxh.supabase.co/rest/v1/Teste2",
         .api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s"
     };
@@ -110,5 +110,5 @@ void app_main(void)
     if(NULL == gpio_btn) {
         ESP_LOGE("Button_A", "Button create failed");
     }
-    iot_button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, button_single_click_cb, NULL);
+    iot_button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, (button_cb_t*)button_single_click_cb, NULL);
 }

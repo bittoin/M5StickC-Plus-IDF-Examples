@@ -8,7 +8,7 @@ typedef struct {
     char *api_key;
 } supabase_config;
 
-static esp_err_t on_client_data(esp_http_client_event_t *evt);
+esp_err_t on_client_data(esp_http_client_event_t *evt);
 void fetch_data(void);
 
 void spb_open(supabase_config *config_info);
