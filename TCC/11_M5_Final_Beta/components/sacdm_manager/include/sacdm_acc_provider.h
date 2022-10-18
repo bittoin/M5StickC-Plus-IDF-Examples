@@ -4,9 +4,9 @@
 #include "mpu6886.h"
 
 typedef struct {
-    int accX;
-    int accY;
-    int accZ;
+    int16_t accX;
+    int16_t accY;
+    int16_t accZ;
 } raw_acc_val;
 
 void sacdm_acc_provider_init(void);

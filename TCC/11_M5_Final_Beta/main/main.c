@@ -110,5 +110,5 @@ void app_main(void)
     if(NULL == gpio_btn) {
         ESP_LOGE("Button_A", "Button create failed");
     }
-    iot_button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, (button_cb_t*)button_single_click_cb, NULL);
+    iot_button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, &button_single_click_cb, NULL);
 }
