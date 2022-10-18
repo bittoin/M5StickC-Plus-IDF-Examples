@@ -7,7 +7,7 @@ static const char *TAG = "SUPABASE_CLIENT";
 static char auth[250] = "Bearer ";
 static esp_http_client_handle_t client;
 
-void spb_open(void *config_info)
+void spb_open(supabase_config *config_info)
 {
     supabase_config *config = (supabase_config*)config_info;
     esp_http_client_config_t esp_http_client_config = {
@@ -25,6 +25,17 @@ void spb_open(void *config_info)
     esp_http_client_set_header(client, "Prefer", "return=representation");
     esp_http_client_set_header(client, "apikey", config->api_key);
     esp_http_client_set_header(client, "Authorization", auth);
+}
+
+void spb_init(void)
+{
+    ESP_LOGI(TAG, "Inicializando Supabase (HTTP) Client");
+    // strcat(auth, config.api_key);
+    // client = esp_http_client_init(&esp_http_client_config);
+    // esp_http_client_set_header(client, "Content-Type", "application/json");
+    // esp_http_client_set_header(client, "Prefer", "return=representation");
+    // esp_http_client_set_header(client, "apikey", config.api_key);
+    // esp_http_client_set_header(client, "Authorization", auth);
 }
 
 void spb_close(void)

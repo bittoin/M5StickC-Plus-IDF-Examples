@@ -19,22 +19,52 @@
 #include "supabase_client.h"
 #include "sacdm_manager.h"
 
+// Lib do botão e led
+#include "driver/gpio.h"
+#include "iot_button.h"
+
+// Create timer config
 const esp_timer_create_args_t esp_timer_create_args = {
         .callback = sacdm_calculate,
         .name = "SAC Timer"
-    };
+};
 esp_timer_handle_t esp_timer_handle;
 
-void creating_timer()
+#define M5_BUTTON_A 37
+#define M5_BUTTON_B 39
+#define M5_LED GPIO_NUM_10
+
+static int led_state = 1;
+
+// create gpio button
+button_config_t gpio_btn_cfg = {
+    .type = BUTTON_TYPE_GPIO,
+    .gpio_button_config = {
+        .gpio_num = M5_BUTTON_A,
+        .active_level = 0,
+    },
+};
+
+static void button_single_click_cb()
 {
-    esp_timer_create(&esp_timer_create_args, &esp_timer_handle);
-    esp_timer_start_periodic(esp_timer_handle, 2*1000);
+    if (esp_timer_is_active(esp_timer_handle) == 0) {
+        ESP_LOGI("Button_A", "Starting SAC-DM System");
+        esp_timer_start_periodic(esp_timer_handle, 2*1000);
+        gpio_set_level(M5_LED, led_state);
+        led_state = !led_state;
+    } else {
+        ESP_LOGI("Button_A", "Stoping SAC-DM System");
+        esp_timer_stop(esp_timer_handle);
+        sacdm_reset();
+        gpio_set_level(M5_LED, led_state);
+        led_state = !led_state;
+    }
 }
 
 void receive_http_notification(void *params)
 {
     // Configura e inicializa supabase
-    const supabase_config sbp_config = {
+    supabase_config sbp_config = {
         .table_url = "",
         .api_key = ""
     };
@@ -68,6 +98,17 @@ void app_main(void)
     xTaskCreatePinnedToCore(&receive_http_notification, "SupabaseClient", 4096, NULL, 5, &notify_handler, 1);
 
     // Inicia timer para calculo do SAC-DM
-    esp_timer_create(&esp_timer_create_args, &esp_timer_handle);
-    esp_timer_start_periodic(esp_timer_handle, 8*1000);
+    ESP_ERROR_CHECK(esp_timer_create(&esp_timer_create_args, &esp_timer_handle));
+
+    // Configura led
+    gpio_pad_select_gpio(M5_LED);
+    gpio_set_direction(M5_LED, GPIO_MODE_OUTPUT);
+    gpio_set_level(M5_LED, 0);
+
+    // Configura botão do M5
+    button_handle_t gpio_btn = iot_button_create(&gpio_btn_cfg);
+    if(NULL == gpio_btn) {
+        ESP_LOGE("Button_A", "Button create failed");
+    }
+    iot_button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, &button_single_click_cb, NULL);
 }
