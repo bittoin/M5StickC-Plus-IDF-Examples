@@ -65,8 +65,8 @@ void receive_http_notification(void *params)
 {
     // Configura e inicializa supabase
     supabase_config sbp_config = {
-        .table_url = "https://nuopbiwoomjqqfgdasxh.supabase.co/rest/v1/Teste2",
-        .api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51b3BiaXdvb21qcXFmZ2Rhc3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM3ODE5NzYsImV4cCI6MTk2OTM1Nzk3Nn0.OhT45KrI62zmA8TVxabm1dfeuyZhLD2O7tPp6NMXD2s"
+        .table_url = "",
+        .api_key = ""
     };
     spb_open(&sbp_config);
 
